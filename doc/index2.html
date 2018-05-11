@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    <script type='text/javascript'>
+        var map;
+        var directionsManager;
+        function GetMap()
+        {
+            map = new Microsoft.Maps.Map('#myMap', {});
+            //Load the directions module.
+            Microsoft.Maps.loadModule('Microsoft.Maps.Directions', function () {
+                //Create an instance of the directions manager.
+                directionsManager = new Microsoft.Maps.Directions.DirectionsManager(map);
+                //Create waypoints to route between.
+                var Stop0Waypoint = new Microsoft.Maps.Directions.Waypoint({ address: 'Stop 0', location: new Microsoft.Maps.Location(33.64188,-84.50077) });
+                directionsManager.addWaypoint(Stop0Waypoint);
+                var Stop1Waypoint = new Microsoft.Maps.Directions.Waypoint({ address: 'Stop 1', location: new Microsoft.Maps.Location(33.76768,-84.36031) });
+                directionsManager.addWaypoint(Stop1Waypoint);
+				var Stop2Waypoint = new Microsoft.Maps.Directions.Waypoint({ address: 'Stop 2', location: new Microsoft.Maps.Location(34.06477,-84.2266) });
+                directionsManager.addWaypoint(Stop2Waypoint);
+                //Specify the element in which the itinerary will be rendered.
+  //              directionsManager.setRenderOptions({ itineraryContainer: '#directionsItinerary' });
+                  Microsoft.Maps.Events.addHandler(directionsManager, 'directionsError', directionsError);
+                Microsoft.Maps.Events.addHandler(directionsManager, 'directionsUpdated', directionsUpdated);
+                //Calculate directions.
+                directionsManager.calculateDirections();
+            });
+
+}
+       function directionsUpdated(e) {
+            //Get the current route index.
+            var routeIdx = directionsManager.getRequestOptions().routeIndex;
+            //Get the distance of the route, rounded to 2 decimal places.
+            var distance = Math.round(e.routeSummary[routeIdx].distance * 100)/100;
+            //Get the distance units used to calculate the route.
+            var units = directionsManager.getRequestOptions().distanceUnit;
+            var distanceUnits = '';
+            if (units == Microsoft.Maps.Directions.DistanceUnit.km) {
+                distanceUnits = 'km'
+            } else {
+                //Must be in miles
+                distanceUnits = 'miles'
+            }
+            //Time is in seconds, convert to minutes and round off.
+            var time = Math.round(e.routeSummary[routeIdx].timeWithTraffic / 60);
+            document.getElementById('routeInfoPanel').innerHTML = 'Distance: ' + distance + ' ' + distanceUnits + '<br/>Time with Traffic: ' + time + ' minutes';
+        }
+        function directionsError(e) {
+            alert('Error: ' + e.message + '\r\nResponse Code: ' + e.responseCode)
+        }
+		
+    </script>
+  
+<script type='text/javascript' src='https://www.bing.com/api/maps/mapcontrol?callback=GetMap&key=ArJkybJp6LvcJs7su6sKIQMBnwYngXlhGIjE5aWRApleSq6DkWzGNm5j80Lb-WZt' async defer></script>
+    <style>        
+        .dirInstructions td, .dirInstructions th{
+            padding-top:0px !important;
+            padding-bottom:0px !important;
+        }
+        .dirSDK p{
+            margin-top:0px !important;
+            margin-bottom:0px !important;
+        }
+  </style>
+
+</head>
+<body>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script type="text/javascript" src="tabletop.js"></script>
+    <script type="text/javascript" src="mapsheet.js"></script>
+    <div id="myMap" style="position:relative;width:800px;height:600px;"></div>
+    <div id='directionsItinerary'></div> 
+	<div id='routeInfoPanel'></div>
+	<div id="floating-panel">
+    <b>RouteID: </b>
+    <select id="RouteID"onchange="GetMap">
+      <option value="ATL6101">ATL6101</option>
+      <option value="ATL6102">ATL6102</option>
+      <option value="ATL6103">ATL6103</option>
+      <option value="ATL6104">ATL6104</option>
+      <option value="ATL6105">ATL6105</option>
+
+    </select>
+	<div class="results"></div> 
+	
+      <!-- This is the popup you'll get when you click a marker. 
+         {{these}} are columns in your spreadsheet -->
+    <script id="popup-template" type="text/x-handlebars-template">
+      <img src="{{image}}">
+      <h3>{{name}}</h3>
+      <p>{{location}} in {{neighborhood}}</p>
+    </script>
+
+    <!-- Okay, time to do this! -->
+    <script type="text/javascript">
+      $(document).ready( function() {       
+        // Make sure the spreadsheet is published!
+        var published_spreadsheet_url = 'https://docs.google.com/spreadsheet/pub?key=0AmYzu_s7QHsmdGNzMnkwbXRyVmdyZGdrWVRoMWRKVGc&output=html'; 
+
+        // Let's get the popup template and compile it using Handlebars
+        var source   = $("#popup-template").html();
+        var template = Handlebars.compile(source);
+
+        // OK, now let's make the map
+        var map = Mapsheet({
+          key: published_spreadsheet_url,
+          element: "map",
+          popupTemplate: template
+        });
+      });
+
+</body>
+</html>
