@@ -2,24 +2,23 @@
 <html>
 
 <head>
-    <title></title>
+    <title>Google Route</title>
     <meta charset="utf-8" />
     <script type='text/javascript'>
+        var data = [
+            { name: 'Rought1', val: [{ address: 'Stop 0', lang: '33.64188', late: '-84.50077' }, { address: 'Stop 1', lang: '33.76768', late: '-84.36031' }] },
+            { name: 'Rought2', val: [{ address: 'Stop 2', lang: '34.6477', late: '-84.2266' }, { address: 'Stop 3', lang: '33.64188', late: '-84.50077' }] }
+        ]
         function directionsUpdated(e) {
-            //Get the current route index.
             var routeIdx = directionsManager.getRequestOptions().routeIndex;
-            //Get the distance of the route, rounded to 2 decimal places.
             var distance = Math.round(e.routeSummary[routeIdx].distance * 100) / 100;
-            //Get the distance units used to calculate the route.
             var units = directionsManager.getRequestOptions().distanceUnit;
             var distanceUnits = '';
             if (units == Microsoft.Maps.Directions.DistanceUnit.km) {
                 distanceUnits = 'km'
             } else {
-                //Must be in miles
                 distanceUnits = 'miles'
             }
-            //Time is in seconds, convert to minutes and round off.
             var time = Math.round(e.routeSummary[routeIdx].timeWithTraffic / 60);
             document.getElementById('routeInfoPanel').innerHTML = 'Distance: ' + distance + ' ' + distanceUnits + '<br/>Time with Traffic: ' + time + ' minutes';
         }
@@ -27,6 +26,7 @@
             alert('Error: ' + e.message + '\r\nResponse Code: ' + e.responseCode)
         }
         var map;
+        var routeId;
         function loadMap() {
             if (!map) {
                 var mapScriptUrl = 'https://www.bing.com/api/maps/mapcontrol?callback=GetMap&key=ArJkybJp6LvcJs7su6sKIQMBnwYngXlhGIjE5aWRApleSq6DkWzGNm5j80Lb-WZt';
@@ -39,30 +39,38 @@
             }
         }
         function GetMap() {
+            var routeId = document.getElementById("mySelectRoute").value;
             map = new Microsoft.Maps.Map('#myMap', {})
             Microsoft.Maps.loadModule('Microsoft.Maps.Directions', function () {
                 directionsManager = new Microsoft.Maps.Directions.DirectionsManager(map);
-                var Stop0Waypoint = new Microsoft.Maps.Directions.Waypoint({ address: 'Stop 0', location: new Microsoft.Maps.Location(33.64188, -84.50077) });
-                directionsManager.addWaypoint(Stop0Waypoint);
-                var Stop1Waypoint = new Microsoft.Maps.Directions.Waypoint({ address: 'Stop 1', location: new Microsoft.Maps.Location(33.76768, -84.36031) });
-                directionsManager.addWaypoint(Stop1Waypoint);
-                var Stop2Waypoint = new Microsoft.Maps.Directions.Waypoint({ address: 'Stop 2', location: new Microsoft.Maps.Location(34.6477, -84.2266) });
-                directionsManager.addWaypoint(Stop2Waypoint);
-                var Stop3Waypoint = new Microsoft.Maps.Directions.Waypoint({ address: 'Stop 3', location: new Microsoft.Maps.Location(34.56477, -84.3266) });
-                directionsManager.addWaypoint(Stop3Waypoint);
+                for (var i = 0; i < data[routeId].val.length; i++) {
+                    var StopWaypoint = new Microsoft.Maps.Directions.Waypoint({ address: data[routeId].val[i].address, location: new Microsoft.Maps.Location(data[routeId].val[i].lang, data[routeId].val[i].late) });
+                    directionsManager.addWaypoint(StopWaypoint);
+                }
                 Microsoft.Maps.Events.addHandler(directionsManager, 'directionsError', directionsError);
                 Microsoft.Maps.Events.addHandler(directionsManager, 'directionsUpdated', directionsUpdated);
                 directionsManager.calculateDirections();
             })
         }
     </script>
-
 </head>
 
-<body>
-    <input type="button" onclick="loadMap()" value="Load Map" />
+<body onload="loadMap()">
+    <div id="selectID"></div>
     <div id="myMap" style="position:relative;width:800px;height:600px;"></div>
     <div id="routeInfoPanel"></div>
 </body>
+<script>
+    function rander() {
+        var element = '<select id="mySelectRoute" onchange="GetMap()">'
+        for (var i = 0; i < data.length; i++) {
+            element = element + '<option value="' + i + '">' + data[i].name + ''
+        }
+        element = element + '</select>'
+        document.getElementById("selectID").innerHTML = element
+    }
+    rander()
+    loadMap()
+</script>
 
 </html>
