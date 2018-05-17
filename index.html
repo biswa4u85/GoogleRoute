@@ -72,13 +72,6 @@
         xhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
                 var tempDate = JSON.parse(this.responseText).rough
-                // tableData = JSON.parse(this.responseText).rough
-                // var row = '<table><th><td>RouteID</td><td>STOP</td><td>ADDRESS</td><td>CITY</td><td>STATE</td><td>ZIP</td><td>ARRIVAL</td><td>latitude</td><td>longitude</td><td>latlon</td></th>'
-                // for (var i = 0; i < tableData.length; i++) {
-                //     row = row + '<tr><td>' + tableData[i].RouteID + '</td><td>' + tableData[i].STOP + '</td><td>' + tableData[i].ADDRESS + '</td><td>' + tableData[i].CITY + '</td><td>' + tableData[i].STATE + '</td><td>' + tableData[i].ZIP + '</td><td>' + tableData[i].ARRIVAL + '</td><td>' + tableData[i].latitude + '</td><td>' + tableData[i].longitude + '</td><td>' + tableData[i].latlon + '</td><td>' + tableData[i].RouteID + '</td></tr>'
-                // }
-                // row = row + '</table>'
-                // document.getElementById("tableID").innerHTML = row
                 for (var i = 0; i < tempDate.length; i++) {
                     if (tempDate[i].RouteID in data) {
                         data[tempDate[i].RouteID].push(tempDate[i])
@@ -94,12 +87,9 @@
                 element = element + '</select>'
                 document.getElementById("selectID").innerHTML = element
                 loadMap()
-
-
-
             }
         };
-        xhttp.open("GET", "https://script.google.com/macros/s/AKfycbxaAYArQH-LUmLiTdkjEgPaV_rHCcvVteI74hN4XAUX0B2fajrZ/exec", true);
+        xhttp.open("GET", "data.json", true);
         xhttp.send();
     }
     rander()
