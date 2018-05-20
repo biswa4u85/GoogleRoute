@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Google Route</title>
+    <meta charset="utf-8" />
+    <script type='text/javascript' src="data.js"></script>
+    <script type='text/javascript'>
+        function directionsUpdated(e) {
+            var routeIdx = directionsManager.getRequestOptions().routeIndex;
+            var distance = Math.round(e.routeSummary[routeIdx].distance * 100) / 100;
+            var units = directionsManager.getRequestOptions().distanceUnit;
+            var distanceUnits = '';
+            if (units == Microsoft.Maps.Directions.DistanceUnit.km) {
+                distanceUnits = 'km'
+            } else {
+                distanceUnits = 'miles'
+            }
+            var time = Math.round(e.routeSummary[routeIdx].timeWithTraffic / 60);
+            document.getElementById('routeInfoPanel').innerHTML = 'Distance: ' + distance + ' ' + distanceUnits + '<br/>Time with Traffic: ' + time + ' minutes';
+        }
+        function directionsError(e) {
+            alert('Error: ' + e.message + '\r\nResponse Code: ' + e.responseCode)
+        }
+        var map;
+        var routeId;
+        var data = {};
+        var tableData = [];
+        function loadMap() {
+            if (!map) {
+                var mapScriptUrl = 'https://www.bing.com/api/maps/mapcontrol?callback=GetMap&key=ArJkybJp6LvcJs7su6sKIQMBnwYngXlhGIjE5aWRApleSq6DkWzGNm5j80Lb-WZt';
+                var script = document.createElement("script");
+                script.setAttribute('defer', '');
+                script.setAttribute('async', '');
+                script.setAttribute("type", "text/javascript");
+                script.setAttribute("src", mapScriptUrl);
+                document.body.appendChild(script);
+            }
+        }
+        function GetMap() {
+            var routeId = document.getElementById("mySelectRoute").value;
+            map = new Microsoft.Maps.Map('#myMap', {})
+            Microsoft.Maps.loadModule('Microsoft.Maps.Directions', function () {
+                directionsManager = new Microsoft.Maps.Directions.DirectionsManager(map);
+                for (var i = 0; i < data[Object.keys(data)[routeId]].length; i++) {
+                    var StopWaypoint = new Microsoft.Maps.Directions.Waypoint({ address: data[Object.keys(data)[routeId]][i].ADDRESS, location: new Microsoft.Maps.Location(data[Object.keys(data)[routeId]][i].latitude, data[Object.keys(data)[routeId]][i].longitude) });
+                    directionsManager.addWaypoint(StopWaypoint);
+                }
+                Microsoft.Maps.Events.addHandler(directionsManager, 'directionsError', directionsError);
+                Microsoft.Maps.Events.addHandler(directionsManager, 'directionsUpdated', directionsUpdated);
+                directionsManager.calculateDirections();
+                tableData = data[Object.keys(data)[routeId]];
+                var row = '<table><th><td>RouteID</td><td>STOP</td><td>ADDRESS</td><td>CITY</td><td>STATE</td><td>ZIP</td><td>ARRIVAL</td><td>latitude</td><td>longitude</td><td>latlon</td></th>'
+                for (var i = 0; i < tableData.length; i++) {
+                    row = row + '<tr><td>' + tableData[i].RouteID + '</td><td>' + tableData[i].STOP + '</td><td>' + tableData[i].ADDRESS + '</td><td>' + tableData[i].CITY + '</td><td>' + tableData[i].STATE + '</td><td>' + tableData[i].ZIP + '</td><td>' + tableData[i].ARRIVAL + '</td><td>' + tableData[i].latitude + '</td><td>' + tableData[i].longitude + '</td><td>' + tableData[i].latlon + '</td><td>' + tableData[i].RouteID + '</td></tr>'
+                }
+                row = row + '</table>'
+                document.getElementById("tableID").innerHTML = row
+            })
+        }
+    </script>
+</head>
+
+<body>
+    <div id="myMap" style="position:relative;width:800px;height:600px;"></div>
+    <div id="routeInfoPanel"></div>
+    <div id="selectID"></div>
+    <div id="tableID"></div>
+</body>
+<script>
+    function rander() {
+        var tempDate = roughs
+        for (var i = 0; i < tempDate.length; i++) {
+            if (tempDate[i].RouteID in data) {
+                data[tempDate[i].RouteID].push(tempDate[i])
+            } else {
+                data[tempDate[i].RouteID] = []
+                data[tempDate[i].RouteID].push(tempDate[i])
+            }
+        }
+        var element = '<select id="mySelectRoute" onchange="GetMap()">'
+        for (var i = 0; i < Object.keys(data).length; i++) {
+            element = element + '<option value="' + i + '">' + data[Object.keys(data)[i]][0].RouteID + ''
+        }
+        element = element + '</select>'
+        document.getElementById("selectID").innerHTML = element
+        loadMap()
+    }
+    rander()
+</script>
+
+</html>
